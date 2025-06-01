@@ -1,0 +1,45 @@
+<%= @problem.description %>
+<br>
+<textarea id="editor" rows="10" cols="80">// Your code here</textarea><br/>
+<button onclick="runCode()">Run</button>
+
+<h3>Console Output:</h3>
+<pre id="output"></pre>
+
+<iframe id="sandbox" sandbox="allow-scripts" style="display:none;"></iframe>
+<script>
+function runCode() {
+  const code = document.getElementById('editor').value;
+  const output = document.getElementById('output');
+  const iframe = document.getElementById('sandbox');
+
+  // Reset output
+  output.textContent = "";
+
+  const script = `
+    (function() {
+      const originalLog = console.log;
+      console.log = function(...args) {
+        parent.postMessage({ type: 'console', data: args.join(' ') }, '*');
+        originalLog.apply(console, args);
+      };
+      try {
+        ${code}
+      } catch (err) {
+        parent.postMessage({ type: 'error', data: err.message }, '*');
+      }
+    })();
+  `;
+
+  // Write script to iframe
+  iframe.srcdoc = `<script>${script}<\/script>`;
+}
+
+// Listen for messages from iframe
+window.addEventListener('message', (event) => {
+  const output = document.getElementById('output');
+  if (event.data.type === 'console' || event.data.type === 'error') {
+    output.textContent += event.data.data + '\n';
+  }
+});
+</script>

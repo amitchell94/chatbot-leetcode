@@ -1,0 +1,4 @@
+<% @problems.each do |problem| %>
+ <%= link_to problem.description, problem_path(problem)%>
+ <br>
+<% end %>
